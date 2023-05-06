@@ -1,9 +1,9 @@
 
 
-const b2event = () => {
-    document.getElementById('text1').textContent = inputOutfiles[0];
-    cargiInfoDelete();
-}
+// const b2event = () => {
+//     document.getElementById('text1').textContent = inputOutfiles[0];
+//     cargiInfoDelete();
+// }
 
 
 $botton1 = document.getElementById('b1');
@@ -24,6 +24,8 @@ function sampleInput() {
 function transparentChange() {
     if ($botton2.value == "0") {
         $botton2.value = "1";
+    } else if ($botton2.value == "1") {
+        $botton2.value = "2";
     } else {
         $botton2.value = "0";
     }
