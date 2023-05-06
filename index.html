@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>vis_test</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+<body>
+
+    <div class="container">
+        <div class="alert alert-primary" role="alert">
+            visualizer
+        </div>
+
+        <div class="d-flex justify-content-center">
+            <button id = "b1" type="button" class="ms-1 btn btn-primary">sample</button>
+            <button id = "b2" type="button" class="ms-1 btn btn-secondary">-</button>
+            <button id = "b3" type="button" class="ms-1 btn btn-success">-</button>
+            <button id = "b4" type="button" class="ms-1 btn btn-danger">-</button>
+        </div>
+
+        <div id = "text1"> no data </div>    
+    </div>
+
+    <hr>
+
+    <div class="container">
+
+        <div class="d-flex justify-content-center">
+            <!-- 入力ファイル -->
+            <div class="container">
+                <div class="d-flex justify-content-start">
+                    <input type="file" id="infile" name="upfile[]"  webkitdirectory />
+                    <div id="list"></div>
+                </div>
+
+                <div class="d-flex justify-content-start">
+                    <p><label> Input:<br>
+                        <textarea id="input" rows="4" style="width:350px;" data-gramm_editor="false" oninput="updateOutput()"></textarea>
+                    </label></p>
+                </div>
+            </div>
+
+            <!-- 出力ファイル -->
+            <div class="container">
+                <div class="d-flex justify-content-start">
+                    <input type="file" id="outfile" name="upfile[]"  webkitdirectory />
+                    <div id="list"></div>
+                </div>
+            
+                <div class="d-flex justify-content-start">
+                    <p></p><label>Output:<br>
+                        <textarea id="output" rows="4" style="width:350px;" data-gramm_editor="false" oninput="updateOutput()"></textarea>
+                    </label></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ファイルNo -->
+        <div class="container">
+            <div class="d-flex justify-content-start">
+                <p>
+                    <label> file:
+                        <input type="number" id="useFileNo" value="0" min="0" max="0" style="width:70px;text-align:right;"onchange="useFileRead(this.value)" />
+                    </label>
+                    
+                    <input type="range" id="useFileNoBar" min="0" max="0" value="0" style="width:780px;" onchange="useFileRead(this.value)"oninput="useFileRead(this.value)">
+                </p>
+            </div> 
+        </div>    
+    </div>
+
+    <hr>
+
+    <!-- 3D 表示 -->
+    <div class="container">
+        <div class="container">
+            <p>
+                <label> turn:
+                    <input type="number" id="turn" value="0" min="0" max="0" style="width:70px;text-align:right;"onchange="update_t(this.value)" />
+                </label>
+                
+                <input type="range" id="t_bar" min="0" max="0" value="0" style="width:780px;" onchange="update_t(this.value)"oninput="update_t(this.value)">
+            </p>
+        </div>
+
+        <div class="alert alert-primary" role="alert">
+            <div class="d-flex justify-content-between">       
+                <!-- 3D 表示本体 -->
+                <div class="container">    
+                    <p id="score" style="user-select:none"></p>
+                    <div id="result_3d"></div>
+                </div>
+           
+                <!-- 3D 表示情報 -->
+                <div class="container">
+                    <p id="contain"> コンテナ情報 </p>
+                    <div id="cargoInfo" style = "background-color:#ffffff"></div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <script>
+
+        let maxInFileData = 0;
+        let maxOutFileData = 0;
+        let maxUseFileData = 0;
+        let inputInfiles = [];
+        let inputOutfiles = [];
+
+
+        function useFileRead(arg) {
+            document.getElementById("useFileNo").value = arg;
+            document.getElementById("useFileNoBar").value = arg; 
+            document.getElementById("input").value = inputInfiles[arg];
+            document.getElementById("output").value = inputOutfiles[arg];
+            updateOutput();
+        }
+        
+        // inFile入力処理
+        document.getElementById("infile").addEventListener("change", ev => {
+            for (let i = 0; i < ev.target.files.length; i++) {
+                let file = ev.target.files[i];
+                // ディレクトリの相対パス
+                let relativePath = file.webkitRelativePath;
+                let fileReader = new FileReader();
+                fileReader.readAsText(file);
+                fileReader.onload = () => {
+                    inputInfiles[i] = fileReader.result;
+                }
+            }
+            maxInFileData = ev.target.files.length;
+            maxUseFileData = Math.min(maxInFileData,maxOutFileData);
+            document.getElementById("useFileNo").max = maxUseFileData-1;
+            document.getElementById("useFileNoBar").max = maxUseFileData-1;
+        });
+
+        // outFile入力処理
+        document.getElementById("outfile").addEventListener("change", ev => {
+            for (let i = 0; i < ev.target.files.length; i++) {
+                let file = ev.target.files[i];
+
+                // ディレクトリの相対パス
+                let relativePath = file.webkitRelativePath;
+
+                let fileReader = new FileReader();
+
+                fileReader.readAsText(file);
+                fileReader.onload = () => {
+                    inputOutfiles[i] = fileReader.result;
+                }
+            }
+            maxOutFileData = ev.target.files.length;
+            maxUseFileData = Math.min(maxInFileData,maxOutFileData);
+            document.getElementById("useFileNo").max = maxUseFileData-1;
+            document.getElementById("useFileNoBar").max = maxUseFileData-1;
+        });
+    </script>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.150.1/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.150.1/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        var veiwData;
+        var objs = [];
+        let colors = [];
+        let cargoInfo = [];
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xffffff);
+
+        const camera = new THREE.PerspectiveCamera(75, 1.0, 0.1, 100000000);
+        camera.position.set(1000, 800, 1700);
+
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(700, 700);
+        document.getElementById("result_3d").appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.target.set(500, 400, 400);
+
+        // ライトを追加
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(1, 1, 1);
+        scene.add(light);
+
+        function colorSelect(nums) { 
+            let ct = 3;
+            colors = [];
+            while(1) {
+                if (ct*ct*ct > nums) break;
+                ct++;
+            }
+            for(let i = 0; i < ct; i++) {
+                for(let j = 0; j < ct; j++) {
+                    for(let k = 0; k < ct; k++) {
+                        let c = 0;
+                        c += (0xff/ct)*(i);
+                        c += ((0xff/ct)*(j)) << 8;
+                        c += ((0xff/ct)*(k)) << 16;
+                        colors[i*ct*ct+j*ct+k] = c;
+                    }
+                }
+            }
+        }
+
+
+        function visualize(arg, cargoCount, cargoIdCount, turn) {
+
+            console.log(arg);
+            colorSelect(cargoIdCount);
+            
+
+            for (let i = 0; i < objs.length; i++) {
+                scene.remove(objs[i]);
+            }
+            objs = [];
+            
+            for (var i = 0; i < 4; i++) {
+                const geometry = new THREE.BoxGeometry();
+                const material = new THREE.MeshToonMaterial({
+                    color: 0x000000,
+                });
+                const cube = new THREE.Mesh(geometry, material);
+                cube.position.set(arg[i].px, arg[i].pz, arg[i].py);
+                cube.scale.set(arg[i].x, arg[i].z, arg[i].y);
+                scene.add(cube);
+               
+
+                const boxHelper = new THREE.BoxHelper(cube, 0x000000);
+                scene.add(boxHelper);
+                objs.push(cube);
+                objs.push(boxHelper);
+            }
+
+            // block 追加
+            let colorChenge = 0xffffff / (cargoIdCount+1);
+            
+            for (var i = 4; i < 4+turn; i++) {
+                const geometry = new THREE.BoxGeometry();
+                
+                const material = new THREE.MeshToonMaterial({
+                    color: colors[Number(arg[i].no)+1],
+                });
+                
+                if (3+turn != i) {
+//                    material.transparent = true;
+//                    material.opacity = 0.3;
+                }
+
+                const cube = new THREE.Mesh(geometry, material);
+                cube.position.set(arg[i].px, arg[i].pz, arg[i].py);
+                cube.scale.set(arg[i].x, arg[i].z, arg[i].y);
+                scene.add(cube);    
+
+                const boxHelper = new THREE.BoxHelper(cube, 0x000000);
+                scene.add(boxHelper);
+                objs.push(cube);
+                objs.push(boxHelper);
+            }
+
+            let infoArray = getCargoInfomation();
+            console.log(infoArray);
+            cargoInfoUpdate(infoArray,Number(arg[turn+3].no));  // 荷物情報更新
+        };
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+
+        function updateOutput() {
+            document.getElementById("turn").max = 0;
+            document.getElementById("t_bar").max = 0;
+            document.getElementById("turn").value = 0;
+            document.getElementById("t_bar").value = 0;
+            cargiInfoDelete();
+
+            try {
+                veiwData = make();
+                let cargoCount = getCargoCount();
+                let cargoIdCount = getCargoIdCount();
+                document.getElementById("turn").max = cargoCount;
+                document.getElementById("t_bar").max = cargoCount;
+                document.getElementById("turn").value = cargoCount;
+                document.getElementById("t_bar").value = cargoCount;
+                visualize(veiwData, cargoCount, cargoIdCount, cargoCount);
+                animate();
+                document.getElementById("text1").textContent = "input ok";
+            } catch (error) {
+                console.log(error);
+                document.getElementById("text1").textContent = "input err";
+            }
+        };
+        window.updateOutput = updateOutput;
+
+        function update_t(turn) {
+            cargiInfoDelete();
+            let cargoCount = getCargoCount();
+            let cargoIdCount = getCargoIdCount();
+            document.getElementById("turn").value = turn;
+            document.getElementById("t_bar").value = turn;
+            let sub = Number(turn);
+            visualize(veiwData, cargoCount, cargoIdCount, sub);
+            animate();   
+        };
+        window.update_t = update_t;
+
+        // 構成要素取得
+        function cargoInfoUpdate(infoArray, no) {
+
+            document.getElementById("contain").textContent = infoArray[0];
+
+            //親要素を取得する
+            const subCargiInfo = document.getElementById("cargoInfo");
+
+            for(let i = 1; i < infoArray.length; i++) {
+                //要素を新しく作る
+                const psub = document.createElement("p");
+                const l1 = document.createElement("label");
+                const l2 = document.createElement("label");
+
+                l1.textContent = "___";
+                let c = colors[i].toString(16).padStart(6,'0');
+                l1.style = "background-color:#"+c;
+                l2.textContent = " : "+infoArray[i];
+                console.log(colors[i].toString(16));
+
+                psub.id = infoArray[i];
+                cargoInfo.push(infoArray[i]);
+
+                //要素に追加する
+                subCargiInfo.appendChild(psub);
+                document.getElementById(infoArray[i]).appendChild(l1);
+                document.getElementById(infoArray[i]).appendChild(l2);
+
+                if (i-1 == no) {
+                    l2.style = "background-color:#e0e0e0";
+                }
+                
+            }
+        }
+        window.cargoInfoUpdate = cargoInfoUpdate;
+
+        // 構成要素削除
+        function cargiInfoDelete() {
+            //親要素を取得する
+            const subCargiInfo = document.getElementById("cargoInfo");
+
+            for(let i = 0; i < cargoInfo.length; i++) {
+                //削除要素取得
+                const del = document.getElementById(cargoInfo[i]);
+                //要素の削除
+                subCargiInfo.removeChild(del);
+            }
+            cargoInfo = [];
+        }
+        window.cargiInfoDelete = cargiInfoDelete;
+
+
+    </script>
+
+
+
+    <script src = "index.js"></script>
+
+</body>
+</html>
