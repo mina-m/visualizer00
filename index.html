@@ -17,7 +17,7 @@
 
         <div class="d-flex justify-content-center">
             <button id = "b1" type="button" class="ms-1 btn btn-primary">sample</button>
-            <button id = "b2" type="button" class="ms-1 btn btn-secondary">-</button>
+            <button id = "b2" type="button" class="ms-1 btn btn-secondary" value = "0" >transparent</button>
             <button id = "b3" type="button" class="ms-1 btn btn-success">-</button>
             <button id = "b4" type="button" class="ms-1 btn btn-danger">-</button>
         </div>
@@ -114,7 +114,6 @@
         let maxUseFileData = 0;
         let inputInfiles = [];
         let inputOutfiles = [];
-
 
         function useFileRead(arg) {
             document.getElementById("useFileNo").value = arg;
@@ -222,15 +221,6 @@
 
 
         function visualize(arg, cargoCount, cargoIdCount, turn) {
-
-            console.log(arg);
-            colorSelect(cargoIdCount);
-            
-
-            for (let i = 0; i < objs.length; i++) {
-                scene.remove(objs[i]);
-            }
-            objs = [];
             
             for (var i = 0; i < 4; i++) {
                 const geometry = new THREE.BoxGeometry();
@@ -258,12 +248,14 @@
                 const material = new THREE.MeshToonMaterial({
                     color: colors[Number(arg[i].no)+1],
                 });
-                
-                if (3+turn != i) {
-//                    material.transparent = true;
-//                    material.opacity = 0.3;
-                }
 
+                if (document.getElementById('b2').value == "1") {
+                    if (3+turn != i) {
+                        material.transparent = true;
+                        material.opacity = 0.1;
+                    }
+                }
+                
                 const cube = new THREE.Mesh(geometry, material);
                 cube.position.set(arg[i].px, arg[i].pz, arg[i].py);
                 cube.scale.set(arg[i].x, arg[i].z, arg[i].y);
@@ -288,34 +280,60 @@
 
         animate();
 
+        //////////////////////////////////////////////////////////////////////////////////////////////
 
+        // 設定変更
+        function configUpdata() {
+            if (objs.length == 0) return;   // 描画無し
+            update_t(-1);
+        }
+        window.configUpdata = configUpdata;
+
+        // 3D表示のリセット
+        function reset3Dveiw() {
+            for (let i = 0; i < objs.length; i++) scene.remove(objs[i]);
+            objs = [];
+        }
+
+        // 入力 inデータ outデータの更新 
         function updateOutput() {
             document.getElementById("turn").max = 0;
             document.getElementById("t_bar").max = 0;
             document.getElementById("turn").value = 0;
             document.getElementById("t_bar").value = 0;
             cargiInfoDelete();
+            reset3Dveiw();
 
             try {
                 veiwData = make();
                 let cargoCount = getCargoCount();
                 let cargoIdCount = getCargoIdCount();
+                colorSelect(cargoIdCount);
                 document.getElementById("turn").max = cargoCount;
                 document.getElementById("t_bar").max = cargoCount;
                 document.getElementById("turn").value = cargoCount;
                 document.getElementById("t_bar").value = cargoCount;
                 visualize(veiwData, cargoCount, cargoIdCount, cargoCount);
                 animate();
-                document.getElementById("text1").textContent = "input ok";
+                document.getElementById("text1").textContent = "input OK";
             } catch (error) {
                 console.log(error);
-                document.getElementById("text1").textContent = "input err";
+                document.getElementById("text1").textContent = "input ERR";
+                document.getElementById("turn").max = 0;
+                document.getElementById("t_bar").max = 0;
+                document.getElementById("turn").value = 0;
+                document.getElementById("t_bar").value = 0;
+                cargiInfoDelete();
+                reset3Dveiw();
             }
         };
         window.updateOutput = updateOutput;
 
         function update_t(turn) {
+            if (turn == -1) turn = document.getElementById("turn").value;
+
             cargiInfoDelete();
+            reset3Dveiw();
             let cargoCount = getCargoCount();
             let cargoIdCount = getCargoIdCount();
             document.getElementById("turn").value = turn;
@@ -329,11 +347,8 @@
         // 構成要素取得
         function cargoInfoUpdate(infoArray, no) {
 
-            document.getElementById("contain").textContent = infoArray[0];
-
-            //親要素を取得する
-            const subCargiInfo = document.getElementById("cargoInfo");
-
+            document.getElementById("contain").textContent = infoArray[0];     
+            const subCargiInfo = document.getElementById("cargoInfo");  //親要素を取得する
             for(let i = 1; i < infoArray.length; i++) {
                 //要素を新しく作る
                 const psub = document.createElement("p");
@@ -354,24 +369,17 @@
                 document.getElementById(infoArray[i]).appendChild(l1);
                 document.getElementById(infoArray[i]).appendChild(l2);
 
-                if (i-1 == no) {
-                    l2.style = "background-color:#e0e0e0";
-                }
-                
+                if (i-1 == no) l2.style = "background-color:#e0e0e0";          
             }
         }
         window.cargoInfoUpdate = cargoInfoUpdate;
 
         // 構成要素削除
-        function cargiInfoDelete() {
-            //親要素を取得する
-            const subCargiInfo = document.getElementById("cargoInfo");
-
+        function cargiInfoDelete() {   
+            const subCargiInfo = document.getElementById("cargoInfo");  //親要素を取得する
             for(let i = 0; i < cargoInfo.length; i++) {
-                //削除要素取得
-                const del = document.getElementById(cargoInfo[i]);
-                //要素の削除
-                subCargiInfo.removeChild(del);
+                const del = document.getElementById(cargoInfo[i]);      //削除要素取得
+                subCargiInfo.removeChild(del);                          //要素の削除
             }
             cargoInfo = [];
         }
