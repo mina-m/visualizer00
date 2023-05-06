@@ -17,8 +17,8 @@
 
         <div class="d-flex justify-content-center">
             <button id = "b1" type="button" class="ms-1 btn btn-primary">sample</button>
-            <button id = "b2" type="button" class="ms-1 btn btn-secondary" value = "0" >transparent</button>
-            <button id = "b3" type="button" class="ms-1 btn btn-success">-</button>
+            <button id = "b2" type="button" class="ms-1 btn btn-secondary">transparent</button>
+            <button id = "b3" type="button" class="ms-1 btn btn-success">target</button>
             <button id = "b4" type="button" class="ms-1 btn btn-danger">-</button>
         </div>
 
@@ -107,6 +107,8 @@
 
     <hr>
 
+    <!-- ---------------------------------------------------------------------------------------------------------------------------------- -->
+
     <script>
 
         let maxInFileData = 0;
@@ -180,6 +182,18 @@
         var objs = [];
         let colors = [];
         let cargoInfo = [];
+        let filesInfo = [];
+
+
+        const CONFIG = class {
+            constructor() {
+                this.conFile = 0;
+                this.conTrans = 0;
+            }
+        };
+        const config = new CONFIG();
+        window.config = config;
+
 
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0xffffff);
@@ -243,7 +257,7 @@
             let colorChenge = 0xffffff / (cargoIdCount+1);
 
             let roop = 4+turn;
-            if (document.getElementById('b2').value == "2") roop = 4+cargoCount;
+            if (config.conTrans == 2) roop = 4+cargoCount;
             
             for (var i = 4; i < roop; i++) {
                 const geometry = new THREE.BoxGeometry();
@@ -252,7 +266,7 @@
                     color: colors[Number(arg[i].no)+1],
                 });
 
-                if (document.getElementById('b2').value != "0") {
+                if (config.conTrans != 0) {
                     if (3+turn != i) {
                         material.transparent = true;
                         material.opacity = 0.05;
@@ -349,7 +363,6 @@
 
         // 構成要素取得
         function cargoInfoUpdate(infoArray, no) {
-
             document.getElementById("contain").textContent = infoArray[0];     
             const subCargiInfo = document.getElementById("cargoInfo");  //親要素を取得する
             for(let i = 1; i < infoArray.length; i++) {

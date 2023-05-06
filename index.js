@@ -13,6 +13,12 @@ $botton1.addEventListener('click', sampleInput.bind());
 $botton2 = document.getElementById('b2');
 $botton2.addEventListener('click', transparentChange.bind());
 
+$botton3 = document.getElementById('b3');
+$botton3.addEventListener('click', fileSelectChange.bind());
+
+$botton4 = document.getElementById('b4');
+$botton4.addEventListener('click', () => {console.log("no func")});
+
 
 function sampleInput() {
     document.getElementById("input").value = "4 1120 680 30 1200\n355 360 285 3 Y Y\n155 210 120 1 Y Y\n510 820 380 1 Y N\n370 710 330 1 Y Y\n"
@@ -22,13 +28,14 @@ function sampleInput() {
 }
 
 function transparentChange() {
-    if ($botton2.value == "0") {
-        $botton2.value = "1";
-    } else if ($botton2.value == "1") {
-        $botton2.value = "2";
-    } else {
-        $botton2.value = "0";
-    }
+    config.conTrans++;
+    if (config.conTrans == 3) config.conTrans = 0;
+    configUpdata();
+}
+
+function fileSelectChange() {
+    config.conFile++;
+    if (config.conFile == 2) config.conFile = 0;
     configUpdata();
 }
 
