@@ -5,19 +5,13 @@ const b2event = () => {
     cargiInfoDelete();
 }
 
-$botton2 = document.getElementById('b2');
-$botton2.addEventListener('click', b2event.bind());
-
-
-const b1event = (arg) => {
-    document.getElementById('text1').textContent = "b1event"+arg;
-}
-
-
 
 $botton1 = document.getElementById('b1');
 //$botton1.addEventListener('click', b1event.bind(null,10));
 $botton1.addEventListener('click', sampleInput.bind());
+
+$botton2 = document.getElementById('b2');
+$botton2.addEventListener('click', transparentChange.bind());
 
 
 function sampleInput() {
@@ -25,6 +19,15 @@ function sampleInput() {
                                             + "01234\naaaa\nbbbb\ncccc\ndddd\n";
     document.getElementById("output").value = "0 3 30 0 0\n0 3 765 365 0\n0 3 30 0 360\n1 1 965 155 0\n2 2 385 0 0\n3 2 30 285 0\n";
     updateOutput();
+}
+
+function transparentChange() {
+    if ($botton2.value == "0") {
+        $botton2.value = "1";
+    } else {
+        $botton2.value = "0";
+    }
+    configUpdata();
 }
 
 
