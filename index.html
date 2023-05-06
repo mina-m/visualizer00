@@ -241,18 +241,21 @@
 
             // block 追加
             let colorChenge = 0xffffff / (cargoIdCount+1);
+
+            let roop = 4+turn;
+            if (document.getElementById('b2').value == "2") roop = 4+cargoCount;
             
-            for (var i = 4; i < 4+turn; i++) {
+            for (var i = 4; i < roop; i++) {
                 const geometry = new THREE.BoxGeometry();
                 
                 const material = new THREE.MeshToonMaterial({
                     color: colors[Number(arg[i].no)+1],
                 });
 
-                if (document.getElementById('b2').value == "1") {
+                if (document.getElementById('b2').value != "0") {
                     if (3+turn != i) {
                         material.transparent = true;
-                        material.opacity = 0.1;
+                        material.opacity = 0.05;
                     }
                 }
                 
