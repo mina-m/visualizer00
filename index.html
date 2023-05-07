@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>vis_test</title>
+    <title>visualizer</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 </head>
@@ -15,19 +15,39 @@
             visualizer
         </div>
 
-        <div class="d-flex justify-content-center">
-            <button id = "b1" type="button" class="ms-1 btn btn-primary">sample</button>
-            <button id = "b2" type="button" class="ms-1 btn btn-secondary">transparent</button>
-            <button id = "b3" type="button" class="ms-1 btn btn-success">target</button>
-            <button id = "b4" type="button" class="ms-1 btn btn-danger">-</button>
+        <div class="d-sm-flex">
+            <div class="d-inline-flex">
+                <button id = "b1" type="button" class="ms-1 btn btn-primary">sample</button>
+            </div>
+            <div class="d-inline-flex">
+                <button id = "b2" type="button" class="ms-5 btn btn-secondary"> Transparent </button>
+                <select class="ms-1 form-select form-select-sm" id = "transForm" onchange="chengeTransform(this.value)">
+                    <option value=0>無効</option>
+                    <option value=1>設定1</option>
+                    <option value=2>設定2</option>
+                </select>
+            </div>
+            <div class="d-inline-flex">
+                <button id = "b3" type="button" class="ms-5 btn btn-success">target</button>
+                <select class="ms-1 form-select form-select-sm" id = "targetForm" onchange="chengeTargetForm(this.value)">
+                    <option value=0>全ての結果を表示</option>
+                    <option value=1>積込みOKのみ</option>
+                    <option value=2>積込みNGのみ</option>
+                    <option value=3>積込みOK順序OKのみ</option>
+                    <option value=4>積込みOK順序NGのみ</option>
+                </select>
+            </div>
+            <div class="d-inline-flex">
+                <button id = "b4" type="button" class="ms-5 btn btn-danger">-</button>
+            </div>
         </div>
 
-        <div id = "text1"> no data </div>    
     </div>
 
     <hr>
 
     <div class="container">
+        
 
         <div class="d-flex justify-content-center">
             <!-- 入力ファイル -->
@@ -88,18 +108,23 @@
         </div>
 
         <div class="alert alert-primary" role="alert">
-            <div class="d-flex justify-content-between">       
+            <div class="d-flex justify-content-start">
+                <span class="badge rounded-pill bg-primary" id = inputCheck>No data</span>
+                <span id="result" class="ms-2 border-bottom border-secondary">------</span>
+            </div>  
+            <div class="d-flex justify-content-between">
                 <!-- 3D 表示本体 -->
                 <div class="container">    
                     <p id="score" style="user-select:none"></p>
-                    <div id="result_3d"></div>
+                    <div id="result_3d" calss ="ms-1"></div>
                 </div>
-           
+        
                 <!-- 3D 表示情報 -->
                 <div class="container">
-                    <p id="contain"> コンテナ情報 </p>
+                    <div class="d-flex justify-content-start">
+                        <div>出庫完了NO：</div><div id="contain"></div>
+                    </div>
                     <div id="cargoInfo" style = "background-color:#ffffff"></div>
-
                 </div>
             </div>
         </div>
@@ -107,6 +132,7 @@
 
     <hr>
 
+    <!-- ---------------------------------------------------------------------------------------------------------------------------------- -->
     <!-- ---------------------------------------------------------------------------------------------------------------------------------- -->
     <!-- ---------------------------------------------------------------------------------------------------------------------------------- -->
 
@@ -188,7 +214,7 @@
 
         const CONFIG = class {
             constructor() {
-                this.conFile = 0;
+                this.conTarget = 0;
                 this.conTrans = 0;
             }
         };
@@ -234,6 +260,17 @@
             }
         }
 
+        function judeUndefined(arg) {
+            if (arg.no === undefined) return -1;
+            if (arg.px === undefined) return -1;
+            if (arg.py === undefined) return -1;
+            if (arg.pz === undefined) return -1;
+            if (arg.x === undefined) return -1;
+            if (arg.y === undefined) return -1;
+            if (arg.z === undefined) return -1;
+            return 0;
+        }
+
 
         function visualize(arg, cargoCount, cargoIdCount, turn) {
             
@@ -261,8 +298,9 @@
             if (config.conTrans == 2) roop = 4+cargoCount;
             
             for (var i = 4; i < roop; i++) {
-                const geometry = new THREE.BoxGeometry();
+                if (judeUndefined(arg[i]) == -1) return -1;
                 
+                const geometry = new THREE.BoxGeometry();
                 const material = new THREE.MeshToonMaterial({
                     color: colors[Number(arg[i].no)+1],
                 });
@@ -274,11 +312,10 @@
                     }
                 }
                 
-                const cube = new THREE.Mesh(geometry, material);
+                const cube = new THREE.Mesh(geometry, material);        
                 cube.position.set(arg[i].px, arg[i].pz, arg[i].py);
                 cube.scale.set(arg[i].x, arg[i].z, arg[i].y);
                 scene.add(cube);    
-
                 const boxHelper = new THREE.BoxHelper(cube, 0x000000);
                 scene.add(boxHelper);
                 objs.push(cube);
@@ -286,8 +323,8 @@
             }
 
             let infoArray = getCargoInfomation();
-            console.log(infoArray);
             cargoInfoUpdate(infoArray,Number(arg[turn+3].no));  // 荷物情報更新
+            return 0;
         };
 
         function animate() {
@@ -331,12 +368,21 @@
                 document.getElementById("t_bar").max = cargoCount;
                 document.getElementById("turn").value = cargoCount;
                 document.getElementById("t_bar").value = cargoCount;
-                visualize(veiwData, cargoCount, cargoIdCount, cargoCount);
+                if (visualize(veiwData, cargoCount, cargoIdCount, cargoCount) == -1) throw(error);
                 animate();
-                document.getElementById("text1").textContent = "input OK";
+                document.getElementById("inputCheck").textContent = "input OK";
+                document.getElementById("inputCheck").className = "badge rounded-pill bg-success";
+                let sub = getScore();
+                if (sub == 0) document.getElementById("result").textContent = "積込みOK 順序OK";
+                if (sub == 1) document.getElementById("result").textContent = "積込みOK 順序NG";
+                if (sub == 2) document.getElementById("result").textContent = "積込みNG";
+
             } catch (error) {
                 console.log(error);
-                document.getElementById("text1").textContent = "input ERR";
+                document.getElementById("inputCheck").textContent = "input ERR";
+                document.getElementById("inputCheck").className = "badge rounded-pill bg-danger";
+                document.getElementById("contain").textContent = "";
+                if (sub == 2) document.getElementById("result").textContent = "------";
                 document.getElementById("turn").max = 0;
                 document.getElementById("t_bar").max = 0;
                 document.getElementById("turn").value = 0;
@@ -376,7 +422,6 @@
                 let c = colors[i].toString(16).padStart(6,'0');
                 l1.style = "background-color:#"+c;
                 l2.textContent = " : "+infoArray[i];
-                console.log(colors[i].toString(16));
 
                 psub.id = infoArray[i];
                 cargoInfo.push(infoArray[i]);
