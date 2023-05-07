@@ -14,7 +14,7 @@ $botton2 = document.getElementById('b2');
 $botton2.addEventListener('click', transparentChange.bind());
 
 $botton3 = document.getElementById('b3');
-$botton3.addEventListener('click', fileSelectChange.bind());
+$botton3.addEventListener('click', targetSelectChange.bind());
 
 $botton4 = document.getElementById('b4');
 $botton4.addEventListener('click', () => {console.log("no func")});
@@ -23,20 +23,34 @@ $botton4.addEventListener('click', () => {console.log("no func")});
 function sampleInput() {
     document.getElementById("input").value = "4 1120 680 30 1200\n355 360 285 3 Y Y\n155 210 120 1 Y Y\n510 820 380 1 Y N\n370 710 330 1 Y Y\n"
                                             + "01234\naaaa\nbbbb\ncccc\ndddd\n";
-    document.getElementById("output").value = "0 3 30 0 0\n0 3 765 365 0\n0 3 30 0 360\n1 1 965 155 0\n2 2 385 0 0\n3 2 30 285 0\n";
+    document.getElementById("output").value = "1820\n0 3 30 0 0\n0 3 765 365 0\n0 3 30 0 360\n1 1 965 155 0\n2 2 385 0 0\n3 2 30 285 0\n";
     updateOutput();
 }
 
+// ボタンでの変更
 function transparentChange() {
     config.conTrans++;
     if (config.conTrans == 3) config.conTrans = 0;
+    transForm.value = config.conTrans;
+    configUpdata();
+}
+// formでの変更
+function chengeTransform(arg) {
+    config.conTrans = arg;
     configUpdata();
 }
 
-function fileSelectChange() {
-    config.conFile++;
-    if (config.conFile == 2) config.conFile = 0;
-    configUpdata();
+// ボタンでの変更
+function targetSelectChange() {
+    config.conTarget++;
+    if (config.conTarget == 5) config.conTarget = 0;
+    targetForm.value = config.conTarget;
+    
+}
+// formでの変更
+function chengeTargetForm(arg) {
+    config.conTarget = arg;
+    
 }
 
 
@@ -122,6 +136,14 @@ function getCargoInfomation() {
     return infoArray;
 }
 
+function getScore() {
+    const output = document.getElementById("output").value;
+    let outStArray = splitOrigin(output);
+    if (Number(outStArray[0]) < 2200) return 0;     // 積込みOK 順序OK
+    if (Number(outStArray[0]) < 1000000) return 1;  // 積込みOK 順序NG
+    return 2;                                       // 積込みNG
+}
+
 
 function make() {
     const input = document.getElementById("input").value;
@@ -130,6 +152,8 @@ function make() {
     let inStArray = splitOrigin(input);
     let outStArray = splitOrigin(output);
     let cargoCount = 0;
+
+    outStArray.shift(); // 先頭削除
 
     var anser = {};
     var inputCargo = {};
