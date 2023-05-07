@@ -45,12 +45,56 @@ function targetSelectChange() {
     config.conTarget++;
     if (config.conTarget == 5) config.conTarget = 0;
     targetForm.value = config.conTarget;
+    chengeFileTarget();
     
 }
 // formでの変更
 function chengeTargetForm(arg) {
     config.conTarget = arg;
-    
+    chengeFileTarget();
+}
+
+function chengeFileTarget() {
+    filesInfo = [];
+    for (let i = 0; i < inputOutfiles.length; i++) {
+        let outStArray = splitOrigin(inputOutfiles[i]);
+
+        if (config.conTarget == 0) {        // 全結果表示
+            if (Number(outStArray[0]) < 2200) {
+                filesInfo.push(i);
+            } else if (Number(outStArray[0]) < 1000000) {
+                filesInfo.push(i);
+            } else {
+                filesInfo.push(i);
+            }                            
+        } else if (config.conTarget == 1) { // 積込みOKのみ
+            if (Number(outStArray[0]) < 2200) {
+                filesInfo.push(i);
+            } else if (Number(outStArray[0]) < 1000000) {
+                filesInfo.push(i);
+            } else {
+            }     
+        } else if (config.conTarget == 2) { // 積込みNGのみ
+            if (Number(outStArray[0]) < 2200) {
+            } else if (Number(outStArray[0]) < 1000000) {
+            } else {
+                filesInfo.push(i);
+            }     
+        } else if (config.conTarget == 3) { // 積込みOK順序OKのみ
+            if (Number(outStArray[0]) < 2200) {
+                filesInfo.push(i);
+            } else if (Number(outStArray[0]) < 1000000) {
+            } else {
+            }     
+        } else if (config.conTarget == 4) { // 積込みOK順序NGのみ
+            if (Number(outStArray[0]) < 2200) {
+            } else if (Number(outStArray[0]) < 1000000) {
+                filesInfo.push(i);
+            } else {
+            }     
+        }
+    }
+    console.log(filesInfo);
 }
 
 
